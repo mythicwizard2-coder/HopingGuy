@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HopingGuy</title>
+<link rel="icon" type="image/jpg" href="https://cdn.discordapp.com/attachments/1449716540831170646/1474702529521778812/20260220_135054.jpg?ex=699acf41&is=69997dc1&hm=6ee47549dca0ca2a0913f6a9c4a5c4d777edba5e695d106cf676b30ec31c9bac&">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #00aaff;
+    --blue-glow: #0077ff;
+    --blue-dark: #003580;
+    --black: #040810;
+    --black2: #080f1a;
+    --glass: rgba(0,170,255,0.07);
+    --glass-border: rgba(0,170,255,0.18);
+    --text: #e8f4ff;
+    --text-dim: #7eaecf;
+    --glow: 0 0 20px rgba(0,170,255,0.4), 0 0 60px rgba(0,100,255,0.15);
+    --glow-strong: 0 0 30px rgba(0,170,255,0.7), 0 0 80px rgba(0,100,255,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--black);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* ── HERO / BG ── */
+  #bg-layer {
+    position: fixed; inset: 0; z-index: 0;
+    background: url('https://cdn.discordapp.com/attachments/1449716540831170646/1474712948835356784/InShot_20260221_152848200.gif?ex=699ad8f5&is=69998775&hm=1c3f1df092f97c30c3adfb4e732707409fb066ac7618796dc780e7d9d88fdb35&') center/cover no-repeat;
+    transition: filter 0.6s ease;
+  }
+  #bg-layer::after {
+    content:'';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(4,8,16,0.05) 0%, rgba(4,8,16,0.12) 100%);
+  }
+  body.post-open #bg-layer { filter: blur(14px) brightness(0.4); }
+
+  /* ── NAVBAR ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px;
+    background: rgba(4,8,16,0.6);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  /* Menu dots */
+  #menu-btn {
+    background: none; border: none; cursor: pointer;
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px; padding: 8px;
+    position: relative;
+  }
+  #menu-btn span {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--blue);
+    display: block;
+    box-shadow: 0 0 8px var(--blue);
+    transition: transform 0.3s ease;
+  }
+  #menu-btn:hover span { transform: scale(1.4); }
+
+  /* Branding */
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand img {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 2px solid var(--blue);
+    box-shadow: var(--glow);
+    object-fit: cover;
+  }
+  .brand-name {
+    font-size: 1.3rem; font-weight: 800; letter-spacing: 2px;
+    background: linear-gradient(90deg, #fff 0%, var(--blue) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
+  }
+
+  /* ── DROPDOWN MENU ── */
+  #dropdown {
+    position: absolute; top: 70px; right: 16px;
+    background: rgba(4,10,22,0.95);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    backdrop-filter: blur(20px);
+    box-shadow: var(--glow-strong);
+    overflow: hidden;
+    transform: scaleY(0) translateY(-10px);
+    transform-origin: top;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 200;
+    min-width: 180px;
+  }
+  #dropdown.open {
+    transform: scaleY(1) translateY(0);
+    opacity: 1;
+  }
+  #dropdown button {
+    display: block; width: 100%;
+    background: none; border: none; color: var(--text);
+    padding: 14px 20px; text-align: left;
+    font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 600;
+    cursor: pointer; letter-spacing: 1px;
+    border-bottom: 1px solid rgba(0,170,255,0.1);
+    transition: background 0.2s, color 0.2s;
+  }
+  #dropdown button:last-child { border-bottom: none; }
+  #dropdown button:hover {
+    background: var(--glass); color: var(--blue);
+  }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    position: relative; z-index: 10;
+    padding: 80px 20px 100px;
+    max-width: 900px; margin: 0 auto;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .hero-title {
+    text-align: center;
+    margin-bottom: 50px;
+    animation: fadeUp 0.8s ease both;
+  }
+  .hero-title h1 {
+    font-size: clamp(2rem, 6vw, 4rem);
+    font-weight: 800; letter-spacing: 4px;
+    background: linear-gradient(90deg, #fff 0%, var(--blue) 60%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
+    text-shadow: none;
+    filter: drop-shadow(0 0 20px rgba(0,170,255,0.5));
+  }
+  .hero-title p {
+    color: var(--text-dim); font-size: 0.95rem;
+    letter-spacing: 3px; margin-top: 10px; font-family: 'Space Mono', monospace;
+  }
+
+  /* ── POSTS GRID ── */
+  #posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    width: 100%;
+  }
+
+  .post-card {
+    background: rgba(4,12,28,0.7);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 24px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    max-width: 100%;
+    min-width: 0;
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    animation: fadeUp 0.5s ease both;
+    box-sizing: border-box;
+  }
+  .post-card * {
+    max-width: 100%;
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  .post-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(0,170,255,0.08) 0%, transparent 60%);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .post-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--glow-strong);
+    border-color: var(--blue);
+  }
+  .post-card:hover::before { opacity: 1; }
+
+  .post-card .post-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem; color: var(--blue);
+    letter-spacing: 2px; margin-bottom: 10px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .post-card h3 {
+    font-size: 1.1rem; font-weight: 700;
+    margin-bottom: 10px; line-height: 1.4;
+    color: #fff;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .post-card .preview {
+    font-size: 0.85rem; color: var(--text-dim);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+  }
+  .post-card .read-tag {
+    display: inline-block; margin-top: 14px;
+    font-size: 0.72rem; letter-spacing: 2px;
+    color: var(--blue); font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    border: 1px solid rgba(0,170,255,0.3);
+    border-radius: 20px; padding: 4px 12px;
+    white-space: nowrap;
+  }
+
+  /* Admin controls on card */
+  .post-card .card-actions {
+    position: absolute; top: 12px; right: 12px;
+    display: none; gap: 8px;
+  }
+  body.is-admin .post-card .card-actions { display: flex; }
+  .card-actions button {
+    background: rgba(0,0,0,0.6); border: 1px solid var(--glass-border);
+    color: var(--text); font-size: 0.72rem; padding: 4px 10px;
+    border-radius: 20px; cursor: pointer; font-family: 'Syne', sans-serif;
+    transition: background 0.2s, color 0.2s;
+  }
+  .card-actions .edit-btn:hover { background: #005fa3; color: #fff; }
+  .card-actions .del-btn:hover { background: #8b0000; color: #fff; }
+
+  /* Empty state */
+  #empty-state {
+    text-align: center; padding: 60px 20px;
+    color: var(--text-dim);
+  }
+  #empty-state .icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.5; }
+  #empty-state p { font-family: 'Space Mono', monospace; font-size: 0.85rem; letter-spacing: 2px; }
+
+  /* ── FULLSCREEN POST VIEWER ── */
+  #post-viewer {
+    position: fixed; inset: 0; z-index: 300;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 20px;
+    pointer-events: none; opacity: 0;
+    transition: opacity 0.4s ease;
+    overflow-y: auto;
+  }
+  #post-viewer.active {
+    pointer-events: all; opacity: 1;
+  }
+  .post-inner {
+    background: rgba(5,12,25,0.97);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    max-width: 740px; width: 100%;
+    padding: 40px;
+    box-shadow: 0 0 60px rgba(0,100,255,0.25), 0 30px 80px rgba(0,0,0,0.8);
+    transform: scale(0.92) translateY(30px);
+    transition: transform 0.5s cubic-bezier(0.34,1.2,0.64,1);
+    margin: 80px auto 40px;
+    position: relative;
+  }
+  #post-viewer.active .post-inner {
+    transform: scale(1) translateY(0);
+  }
+  #back-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: none; border: 1px solid var(--glass-border);
+    color: var(--blue); padding: 9px 20px; border-radius: 30px;
+    cursor: pointer; font-family: 'Syne', sans-serif;
+    font-size: 0.85rem; font-weight: 600; letter-spacing: 1px;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  #back-btn:hover { background: var(--glass); box-shadow: var(--glow); }
+
+  .post-top-actions {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 28px; flex-wrap: wrap;
+  }
+  #copy-prompt-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, rgba(0,119,255,0.2), rgba(0,170,255,0.15));
+    border: 1px solid var(--blue);
+    color: var(--blue); padding: 9px 20px; border-radius: 30px;
+    cursor: pointer; font-family: 'Syne', sans-serif;
+    font-size: 0.85rem; font-weight: 600; letter-spacing: 1px;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    box-shadow: var(--glow);
+  }
+  #copy-prompt-btn:hover {
+    background: linear-gradient(135deg, rgba(0,119,255,0.35), rgba(0,170,255,0.3));
+    box-shadow: var(--glow-strong); transform: translateY(-2px);
+  }
+  #copy-prompt-btn.copied {
+    background: linear-gradient(135deg, rgba(0,200,100,0.2), rgba(0,255,150,0.15));
+    border-color: #00cc77; color: #00cc77;
+    box-shadow: 0 0 20px rgba(0,200,100,0.4);
+  }
+  #post-title {
+    font-size: clamp(1.4rem, 4vw, 2.2rem);
+    font-weight: 800; margin-bottom: 16px; line-height: 1.3;
+    background: linear-gradient(90deg, #fff 0%, var(--blue) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  #post-meta {
+    font-family: 'Space Mono', monospace; font-size: 0.75rem;
+    color: var(--blue); letter-spacing: 2px; margin-bottom: 28px;
+    text-transform: uppercase;
+  }
+  #post-body {
+    font-size: 1rem; line-height: 1.85; color: var(--text);
+    white-space: pre-wrap; font-family: 'Syne', sans-serif;
+  }
+  #post-body img { max-width: 100%; border-radius: 10px; margin: 10px 0; }
+
+  /* ── OVERLAY / MODAL BG ── */
+  .overlay {
+    position: fixed; inset: 0; z-index: 250;
+    background: rgba(0,0,0,0.5);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .overlay.active { opacity: 1; pointer-events: all; }
+
+  /* ── ADMIN PANEL ── */
+  #admin-overlay {
+    position: fixed; inset: 0; z-index: 400;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; background: rgba(0,0,0,0.85);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+    overflow-y: auto;
+  }
+  #admin-overlay.active { opacity: 1; pointer-events: all; }
+
+  .admin-box {
+    background: rgba(4,10,22,0.98);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 36px;
+    width: 100%; max-width: 560px;
+    box-shadow: var(--glow-strong);
+    transform: translateY(20px) scale(0.96);
+    transition: transform 0.4s cubic-bezier(0.34,1.2,0.64,1);
+  }
+  #admin-overlay.active .admin-box { transform: translateY(0) scale(1); }
+  .admin-box h2 {
+    font-size: 1.4rem; font-weight: 800; letter-spacing: 3px;
+    color: var(--blue); text-transform: uppercase; margin-bottom: 24px;
+    text-align: center;
+  }
+
+  /* Login form */
+  #login-form, #post-form { display: flex; flex-direction: column; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label {
+    font-size: 0.75rem; letter-spacing: 2px; color: var(--text-dim);
+    text-transform: uppercase; font-family: 'Space Mono', monospace;
+  }
+  .form-group input, .form-group textarea, .form-group select {
+    background: rgba(0,170,255,0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px; color: var(--text);
+    padding: 12px 16px; font-family: 'Syne', sans-serif; font-size: 0.95rem;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-group input:focus, .form-group textarea:focus {
+    border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,170,255,0.15);
+  }
+  .form-group textarea { min-height: 200px; resize: vertical; line-height: 1.6; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue-glow), var(--blue));
+    border: none; border-radius: 10px; color: #fff;
+    padding: 13px; font-family: 'Syne', sans-serif;
+    font-size: 0.95rem; font-weight: 700; letter-spacing: 2px;
+    cursor: pointer; text-transform: uppercase;
+    transition: box-shadow 0.2s, transform 0.2s;
+    box-shadow: var(--glow);
+  }
+  .btn-primary:hover { box-shadow: var(--glow-strong); transform: translateY(-2px); }
+  .btn-secondary {
+    background: none; border: 1px solid var(--glass-border);
+    color: var(--text-dim); border-radius: 10px;
+    padding: 11px; font-family: 'Syne', sans-serif;
+    font-size: 0.85rem; cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--blue); color: var(--blue); }
+  .error-msg {
+    color: #ff4466; font-size: 0.8rem; letter-spacing: 1px;
+    font-family: 'Space Mono', monospace; text-align: center;
+  }
+
+  /* Admin panel tabs */
+  .admin-tabs {
+    display: flex; gap: 10px; margin-bottom: 24px;
+  }
+  .admin-tab {
+    flex: 1; padding: 10px; background: none;
+    border: 1px solid var(--glass-border); border-radius: 8px;
+    color: var(--text-dim); font-family: 'Syne', sans-serif;
+    font-size: 0.8rem; letter-spacing: 1px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .admin-tab.active {
+    background: var(--glass); border-color: var(--blue);
+    color: var(--blue);
+  }
+
+  .posts-list { display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; }
+  .post-list-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(0,170,255,0.05); border: 1px solid var(--glass-border);
+    border-radius: 10px; padding: 12px 16px;
+  }
+  .post-list-item .pli-title { font-size: 0.9rem; font-weight: 600; flex: 1; }
+  .post-list-item .pli-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .pli-actions button {
+    font-size: 0.72rem; padding: 4px 12px; border-radius: 20px;
+    border: 1px solid var(--glass-border); background: none;
+    color: var(--text); cursor: pointer; font-family: 'Syne', sans-serif;
+    transition: background 0.2s;
+  }
+  .pli-actions .edit-btn:hover { background: #005fa3; }
+  .pli-actions .del-btn:hover { background: #8b0000; }
+
+  /* ── SOCIAL POPUP ── */
+  #social-overlay {
+    position: fixed; inset: 0; z-index: 400;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; background: rgba(0,0,0,0.85);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  #social-overlay.active { opacity: 1; pointer-events: all; }
+  .social-box {
+    background: rgba(4,10,22,0.98);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px; padding: 48px 36px;
+    width: 100%; max-width: 420px;
+    box-shadow: var(--glow-strong);
+    text-align: center;
+    transform: scale(0.88); transition: transform 0.5s cubic-bezier(0.34,1.2,0.64,1);
+  }
+  #social-overlay.active .social-box { transform: scale(1); }
+  .social-box h2 {
+    font-size: 1.3rem; letter-spacing: 4px; color: var(--blue);
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .social-box .tagline {
+    font-family: 'Space Mono', monospace; font-size: 0.75rem;
+    color: var(--text-dim); letter-spacing: 2px; margin-bottom: 36px;
+  }
+  .social-links { display: flex; flex-direction: column; gap: 16px; }
+  .social-link {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 14px; padding: 18px 24px;
+    text-decoration: none; color: var(--text);
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  }
+  .social-link:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--glow);
+    border-color: var(--blue);
+  }
+  .social-link .s-icon {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .yt-icon { background: linear-gradient(135deg, #ff0000, #cc0000); }
+  .dc-icon { background: linear-gradient(135deg, #5865f2, #404eed); }
+  .social-link .s-info { text-align: left; }
+  .social-link .s-name { font-weight: 700; font-size: 1rem; }
+  .social-link .s-label {
+    font-family: 'Space Mono', monospace; font-size: 0.72rem;
+    color: var(--blue); letter-spacing: 1px;
+  }
+  .close-social {
+    margin-top: 28px; background: none; border: 1px solid var(--glass-border);
+    color: var(--text-dim); padding: 10px 30px; border-radius: 30px;
+    cursor: pointer; font-family: 'Syne', sans-serif; font-size: 0.85rem;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .close-social:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--black2); }
+  ::-webkit-scrollbar-thumb { background: var(--blue-dark); border-radius: 3px; }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:600px) {
+    nav { padding: 12px 16px; }
+    .brand-name { font-size: 1rem; }
+    main { padding: 88px 12px 50px; }
+    .post-inner { padding: 24px 18px; margin: 60px auto 30px; }
+  }
+
+  /* Notification toast */
+  #toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(60px);
+    background: rgba(0,170,255,0.15); border: 1px solid var(--blue);
+    border-radius: 30px; padding: 12px 28px;
+    font-family: 'Space Mono', monospace; font-size: 0.8rem;
+    color: var(--blue); letter-spacing: 1px; z-index: 1000;
+    transition: transform 0.4s cubic-bezier(0.34,1.2,0.64,1);
+    backdrop-filter: blur(10px);
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── BGM PLAYER BAR ── */
+  #bgm-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 150;
+    background: rgba(4,8,16,0.85);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 20px;
+    box-shadow: 0 -4px 30px rgba(0,170,255,0.1);
+  }
+  #bgm-play-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue-glow), var(--blue));
+    border: none; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; color: #fff;
+    box-shadow: var(--glow);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  #bgm-play-btn:hover { transform: scale(1.1); box-shadow: var(--glow-strong); }
+  #bgm-song-name {
+    flex: 1; font-size: 0.8rem; font-family: 'Space Mono', monospace;
+    color: var(--blue); letter-spacing: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  #bgm-song-name span { color: var(--text-dim); font-size: 0.7rem; display: block; }
+  #bgm-vol {
+    width: 70px; accent-color: var(--blue);
+    flex-shrink: 0;
+  }
+  .bgm-eq {
+    display: flex; gap: 3px; align-items: flex-end; height: 20px; flex-shrink: 0;
+  }
+  .bgm-eq span {
+    width: 3px; background: var(--blue); border-radius: 2px;
+    box-shadow: 0 0 6px var(--blue);
+    animation: eq 0.8s ease infinite alternate;
+  }
+  .bgm-eq span:nth-child(1) { height: 8px; animation-delay: 0s; }
+  .bgm-eq span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
+  .bgm-eq span:nth-child(3) { height: 10px; animation-delay: 0.3s; }
+  .bgm-eq span:nth-child(4) { height: 18px; animation-delay: 0.1s; }
+  .bgm-eq span:nth-child(5) { height: 6px; animation-delay: 0.25s; }
+  .bgm-eq.paused span { animation-play-state: paused; height: 4px !important; }
+  @keyframes eq {
+    from { transform: scaleY(0.4); }
+    to   { transform: scaleY(1); }
+  }
+
+  /* ── BGM SELECT POPUP ── */
+  #bgm-overlay {
+    position: fixed; inset: 0; z-index: 450;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; background: rgba(0,0,0,0.88);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  #bgm-overlay.active { opacity: 1; pointer-events: all; }
+  .bgm-box {
+    background: rgba(4,10,22,0.98);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px; padding: 40px 30px;
+    width: 100%; max-width: 380px;
+    box-shadow: var(--glow-strong);
+    text-align: center;
+    transform: scale(0.88) translateY(20px);
+    transition: transform 0.5s cubic-bezier(0.34,1.2,0.64,1);
+  }
+  #bgm-overlay.active .bgm-box { transform: scale(1) translateY(0); }
+  .bgm-box h2 {
+    font-size: 1.2rem; letter-spacing: 4px; color: var(--blue);
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .bgm-box .bgm-sub {
+    font-family: 'Space Mono', monospace; font-size: 0.72rem;
+    color: var(--text-dim); letter-spacing: 2px; margin-bottom: 28px;
+  }
+  .bgm-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+  .bgm-item {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 14px; padding: 16px 20px;
+    cursor: pointer; text-align: left;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .bgm-item.playing {
+    border-color: var(--blue);
+    box-shadow: var(--glow);
+    background: rgba(0,170,255,0.1);
+  }
+  .bgm-item:hover { transform: translateY(-3px); box-shadow: var(--glow); border-color: var(--blue); }
+  .bgm-num {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue-glow), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; font-weight: 700; color: #fff; flex-shrink: 0;
+    box-shadow: var(--glow);
+  }
+  .bgm-info { flex: 1; }
+  .bgm-info .bgm-title { font-weight: 700; font-size: 0.95rem; }
+  .bgm-info .bgm-artist {
+    font-family: 'Space Mono', monospace; font-size: 0.68rem;
+    color: var(--text-dim); letter-spacing: 1px; margin-top: 2px;
+  }
+  .bgm-playing-icon { font-size: 1.1rem; color: var(--blue); flex-shrink: 0; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<div id="bg-layer"></div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="brand">
+    <img src="https://cdn.discordapp.com/attachments/1449716540831170646/1474702529521778812/20260220_135054.jpg?ex=699acf41&is=69997dc1&hm=6ee47549dca0ca2a0913f6a9c4a5c4d777edba5e695d106cf676b30ec31c9bac&" alt="HopingGuy">
+    <span class="brand-name">HopingGuy</span>
+  </div>
+
+  <div id="dropdown">
+    <button onclick="openAdminPanel()">⚙ Admin Panel</button>
+    <button onclick="openSocial()">◈ Social Handle</button>
+    <button onclick="openBgm()">♪ Select BGM</button>
+    <button onclick="closeDropdown()">← Back to Website</button>
+  </div>
+
+  <button id="menu-btn" aria-label="Menu">
+    <span></span><span></span><span></span>
+    <span></span><span></span><span></span>
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MAIN -->
+<main>
+  <div id="posts-grid"></div>
+  <div id="empty-state" class="hidden">
+    <div class="icon">✦</div>
+    <p>No posts yet. Check back soon.</p>
+  </div>
+</main>
+
+<!-- POST VIEWER OVERLAY -->
+<div class="overlay" id="post-overlay" onclick="closePost()"></div>
+<div id="post-viewer">
+  <div class="post-inner">
+    <div class="post-top-actions">
+      <button id="back-btn" onclick="closePost()">← Back to Website</button>
+      <button id="copy-prompt-btn" onclick="copyPrompt()">⎘ Copy Prompt</button>
+    </div>
+    <div id="post-title"></div>
+    <div id="post-meta"></div>
+    <div id="post-body"></div>
+  </div>
+</div>
+
+<!-- ADMIN OVERLAY -->
+<div id="admin-overlay">
+  <div class="admin-box">
+    <!-- Login screen -->
+    <div id="login-screen">
+      <h2>Admin Login</h2>
+      <form id="login-form" onsubmit="doLogin(event)">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="admin@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-pass" placeholder="••••••••" required>
+        </div>
+        <div class="error-msg" id="login-error"></div>
+        <button class="btn-primary" type="submit">Access Panel</button>
+        <button class="btn-secondary" type="button" onclick="closeAdminPanel()">Cancel</button>
+      </form>
+    </div>
+
+    <!-- Admin dashboard -->
+    <div id="admin-screen" class="hidden">
+      <h2>Admin Panel</h2>
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="adminTab('write')">✦ Write Post</button>
+        <button class="admin-tab" onclick="adminTab('manage')">≡ Manage Posts</button>
+      </div>
+
+      <!-- Write/Edit Post -->
+      <div id="tab-write">
+        <form id="post-form" onsubmit="savePost(event)">
+          <input type="hidden" id="edit-post-id">
+          <div class="form-group">
+            <label>Post Title</label>
+            <input type="text" id="post-title-input" placeholder="Give your post a title…" required>
+          </div>
+          <div class="form-group">
+            <label>Content</label>
+            <textarea id="post-content-input" placeholder="Write your post here…" required></textarea>
+          </div>
+          <button class="btn-primary" type="submit" id="post-submit-btn">Publish Post</button>
+          <button class="btn-secondary" type="button" id="cancel-edit-btn" onclick="cancelEdit()" style="display:none">Cancel Edit</button>
+          <button class="btn-secondary" type="button" onclick="adminLogout()">Sign Out</button>
+          <button class="btn-secondary" type="button" onclick="closeAdminPanel()">Close Panel</button>
+        </form>
+      </div>
+
+      <!-- Manage Posts -->
+      <div id="tab-manage" class="hidden">
+        <div class="posts-list" id="admin-posts-list"></div>
+        <br>
+        <button class="btn-secondary" onclick="adminLogout()">Sign Out</button>
+        <button class="btn-secondary" onclick="closeAdminPanel()">Close Panel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SOCIAL OVERLAY -->
+<div id="social-overlay">
+  <div class="social-box">
+    <h2>Find Me Here</h2>
+    <p class="tagline">// CONNECT · FOLLOW · JOIN //</p>
+    <div class="social-links">
+      <a class="social-link" href="https://youtube.com/@hopingguy" target="_blank" rel="noopener">
+        <div class="s-icon yt-icon">▶</div>
+        <div class="s-info">
+          <div class="s-name">YouTube</div>
+          <div class="s-label">@hopingguy</div>
+        </div>
+      </a>
+      <a class="social-link" href="https://dsc.gg/hopingguy" target="_blank" rel="noopener">
+        <div class="s-icon dc-icon">#</div>
+        <div class="s-info">
+          <div class="s-name">Discord</div>
+          <div class="s-label">dsc.gg/hopingguy</div>
+        </div>
+      </a>
+    </div>
+    <button class="close-social" onclick="closeSocial()">✕ Close</button>
+  </div>
+</div>
+
+<!-- BGM PLAYER BAR -->
+<div id="bgm-bar">
+  <button id="bgm-play-btn" onclick="toggleBgm()" title="Play/Pause">▶</button>
+  <div class="bgm-eq" id="bgm-eq">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+  <div id="bgm-song-name">
+    Chubina
+    <span>East Duo · Now Playing</span>
+  </div>
+  <input type="range" id="bgm-vol" min="0" max="1" step="0.05" value="0.5" oninput="setBgmVol(this.value)" title="Volume">
+</div>
+
+<!-- BGM SELECT POPUP -->
+<div id="bgm-overlay">
+  <div class="bgm-box">
+    <h2>♪ Background Music</h2>
+    <p class="bgm-sub">// SELECT YOUR VIBE //</p>
+    <div class="bgm-list">
+      <div class="bgm-item playing" id="bgm-item-0" onclick="selectSong(0)">
+        <div class="bgm-num">1</div>
+        <div class="bgm-info">
+          <div class="bgm-title">Chubina</div>
+          <div class="bgm-artist">East Duo · Default</div>
+        </div>
+        <div class="bgm-playing-icon" id="bgm-icon-0">♪</div>
+      </div>
+      <div class="bgm-item" id="bgm-item-1" onclick="selectSong(1)">
+        <div class="bgm-num">2</div>
+        <div class="bgm-info">
+          <div class="bgm-title">Golden Brown</div>
+          <div class="bgm-artist">Slowed Version</div>
+        </div>
+        <div class="bgm-playing-icon" id="bgm-icon-1" style="opacity:0">♪</div>
+      </div>
+      <div class="bgm-item" id="bgm-item-2" onclick="selectSong(2)">
+        <div class="bgm-num">3</div>
+        <div class="bgm-info">
+          <div class="bgm-title">Blue</div>
+          <div class="bgm-artist">Yung Kai</div>
+        </div>
+        <div class="bgm-playing-icon" id="bgm-icon-2" style="opacity:0">♪</div>
+      </div>
+    </div>
+    <button class="close-social" onclick="closeBgm()">✕ Close</button>
+  </div>
+</div>
+
+<!-- Audio element - single player -->
+<audio id="bgm-audio" loop preload="auto" crossorigin="anonymous"></audio>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCAHKJB9gujML8nSuwgX2-QG2L_DZzOWrI",
+    authDomain: "hopingguy-7fa23.firebaseapp.com",
+    projectId: "hopingguy-7fa23",
+    storageBucket: "hopingguy-7fa23.firebasestorage.app",
+    messagingSenderId: "396198318496",
+    appId: "1:396198318496:web:75fb85b2882677a2814c5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const postsCol = collection(db, "posts");
+
+  // expose DB methods globally
+  window._db = {
+    async getAll() {
+      const q = query(postsCol, orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    },
+    async add(title, content) {
+      return await addDoc(postsCol, { title, content, createdAt: serverTimestamp() });
+    },
+    async update(id, title, content) {
+      await updateDoc(doc(db, "posts", id), { title, content });
+    },
+    async del(id) {
+      await deleteDoc(doc(db, "posts", id));
+    }
+  };
+
+  loadPosts();
+</script>
+
+<script>
+  /* ── STATE ── */
+  const ADMIN_EMAIL = "krishnamehta3020@gmail.com";
+  const ADMIN_PASS  = "krishna##";
+  let isAdmin = false;
+  let postsCache = [];
+
+  /* ── DROPDOWN ── */
+  const menuBtn  = document.getElementById('menu-btn');
+  const dropdown = document.getElementById('dropdown');
+  menuBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
+  });
+  document.addEventListener('click', () => dropdown.classList.remove('open'));
+  function closeDropdown() { dropdown.classList.remove('open'); }
+
+  /* ── TOAST ── */
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  /* ── POSTS ── */
+  async function loadPosts() {
+    const grid  = document.getElementById('posts-grid');
+    const empty = document.getElementById('empty-state');
+    grid.innerHTML = '<p style="color:var(--text-dim);font-family:Space Mono,monospace;font-size:.8rem;text-align:center;grid-column:1/-1;letter-spacing:2px">Loading…</p>';
+
+    // Wait for firebase module to initialize
+    let tries = 0;
+    while (!window._db && tries < 40) {
+      await new Promise(r => setTimeout(r, 150)); tries++;
+    }
+    if (!window._db) {
+      grid.innerHTML = '<p style="color:#ff4466;text-align:center;grid-column:1/-1">Firebase unavailable. Check your connection.</p>';
+      return;
+    }
+
+    try {
+      postsCache = await window._db.getAll();
+    } catch(e) {
+      grid.innerHTML = `<p style="color:#ff4466;text-align:center;grid-column:1/-1">Error loading posts: ${e.message}</p>`;
+      return;
+    }
+    renderPosts();
+  }
+
+  function renderPosts() {
+    const grid  = document.getElementById('posts-grid');
+    const empty = document.getElementById('empty-state');
+    grid.innerHTML = '';
+    if (!postsCache.length) {
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    postsCache.forEach((post, i) => {
+      const card = document.createElement('div');
+      card.className = 'post-card';
+      card.style.animationDelay = (i * 0.08) + 's';
+      const preview = post.content ? post.content.substring(0, 100).replace(/\s+/g, ' ').trim() + (post.content.length > 100 ? '…' : '') : '';
+      const date = post.createdAt?.toDate ? post.createdAt.toDate().toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) : 'Recent';
+      card.innerHTML = `
+        <div class="card-actions">
+          <button class="edit-btn" onclick="startEdit('${post.id}',event)">Edit</button>
+          <button class="del-btn" onclick="deletePost('${post.id}',event)">Delete</button>
+        </div>
+        <div class="post-date">${date}</div>
+        <h3>${escHtml(post.title)}</h3>
+        <p class="preview">${escHtml(preview)}</p>
+        <span class="read-tag">Read More →</span>
+      `;
+      card.addEventListener('click', () => openPost(post.id));
+      grid.appendChild(card);
+    });
+  }
+
+  function escHtml(t = '') {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /* ── POST VIEWER ── */
+  function openPost(id) {
+    const post = postsCache.find(p => p.id === id);
+    if (!post) return;
+    _currentPostContent = post.content || '';
+    document.getElementById('post-title').textContent = post.title;
+    const date = post.createdAt?.toDate ? post.createdAt.toDate().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : '';
+    document.getElementById('post-meta').textContent = date;
+    document.getElementById('post-body').textContent = post.content;
+    document.getElementById('post-overlay').classList.add('active');
+    document.getElementById('post-viewer').classList.add('active');
+    document.body.classList.add('post-open');
+    document.body.style.overflow = 'hidden';
+    // Reset copy button
+    const btn = document.getElementById('copy-prompt-btn');
+    btn.textContent = '⎘ Copy Prompt';
+    btn.classList.remove('copied');
+  }
+
+  function closePost() {
+    document.getElementById('post-overlay').classList.remove('active');
+    document.getElementById('post-viewer').classList.remove('active');
+    document.body.classList.remove('post-open');
+    document.body.style.overflow = '';
+  }
+
+  /* ── ADMIN PANEL ── */
+  function openAdminPanel() {
+    closeDropdown();
+    document.getElementById('admin-overlay').classList.add('active');
+    if (!isAdmin) {
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('admin-screen').classList.add('hidden');
+    } else {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('admin-screen').classList.remove('hidden');
+      renderAdminList();
+    }
+  }
+  function closeAdminPanel() {
+    document.getElementById('admin-overlay').classList.remove('active');
+  }
+
+  function doLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const pass  = document.getElementById('login-pass').value;
+    if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
+      isAdmin = true;
+      document.body.classList.add('is-admin');
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('admin-screen').classList.remove('hidden');
+      document.getElementById('login-error').textContent = '';
+      renderAdminList();
+      renderPosts();
+    } else {
+      document.getElementById('login-error').textContent = 'Invalid credentials.';
+    }
+  }
+
+  function adminLogout() {
+    isAdmin = false;
+    document.body.classList.remove('is-admin');
+    closeAdminPanel();
+    renderPosts();
+  }
+
+  function adminTab(tab) {
+    document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-write').classList.add('hidden');
+    document.getElementById('tab-manage').classList.add('hidden');
+    if (tab === 'write') {
+      document.getElementById('tab-write').classList.remove('hidden');
+      document.querySelectorAll('.admin-tab')[0].classList.add('active');
+    } else {
+      document.getElementById('tab-manage').classList.remove('hidden');
+      document.querySelectorAll('.admin-tab')[1].classList.add('active');
+      renderAdminList();
+    }
+  }
+
+  function renderAdminList() {
+    const list = document.getElementById('admin-posts-list');
+    list.innerHTML = '';
+    if (!postsCache.length) {
+      list.innerHTML = '<p style="color:var(--text-dim);font-size:.85rem;text-align:center;padding:20px">No posts yet.</p>';
+      return;
+    }
+    postsCache.forEach(post => {
+      const item = document.createElement('div');
+      item.className = 'post-list-item';
+      item.innerHTML = `
+        <div class="pli-title">${escHtml(post.title.substring(0,50))}${post.title.length>50?'…':''}</div>
+        <div class="pli-actions">
+          <button class="edit-btn" onclick="startEdit('${post.id}',event)">Edit</button>
+          <button class="del-btn" onclick="deletePost('${post.id}',event)">Delete</button>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  /* ── SAVE / EDIT / DELETE ── */
+  async function savePost(e) {
+    e.preventDefault();
+    const title   = document.getElementById('post-title-input').value.trim();
+    const content = document.getElementById('post-content-input').value.trim();
+    const editId  = document.getElementById('edit-post-id').value;
+    const btn = document.getElementById('post-submit-btn');
+    btn.textContent = 'Saving…'; btn.disabled = true;
+
+    try {
+      if (editId) {
+        await window._db.update(editId, title, content);
+        showToast('Post updated ✓');
+      } else {
+        await window._db.add(title, content);
+        showToast('Post published ✓');
+      }
+      cancelEdit();
+      await loadPosts();
+      renderAdminList();
+    } catch(err) {
+      showToast('Error: ' + err.message);
+    }
+    btn.textContent = editId ? 'Update Post' : 'Publish Post';
+    btn.disabled = false;
+  }
+
+  function startEdit(id, e) {
+    if (e) e.stopPropagation();
+    const post = postsCache.find(p => p.id === id);
+    if (!post) return;
+    document.getElementById('edit-post-id').value = id;
+    document.getElementById('post-title-input').value = post.title;
+    document.getElementById('post-content-input').value = post.content;
+    document.getElementById('post-submit-btn').textContent = 'Update Post';
+    document.getElementById('cancel-edit-btn').style.display = '';
+    adminTab('write');
+    openAdminPanel();
+  }
+
+  function cancelEdit() {
+    document.getElementById('edit-post-id').value = '';
+    document.getElementById('post-title-input').value = '';
+    document.getElementById('post-content-input').value = '';
+    document.getElementById('post-submit-btn').textContent = 'Publish Post';
+    document.getElementById('cancel-edit-btn').style.display = 'none';
+  }
+
+  async function deletePost(id, e) {
+    if (e) e.stopPropagation();
+    if (!confirm('Delete this post permanently?')) return;
+    try {
+      await window._db.del(id);
+      showToast('Post deleted');
+      await loadPosts();
+      renderAdminList();
+    } catch(err) {
+      showToast('Error: ' + err.message);
+    }
+  }
+
+  /* ── SOCIAL ── */
+  function openSocial() {
+    closeDropdown();
+    document.getElementById('social-overlay').classList.add('active');
+  }
+  function closeSocial() {
+    document.getElementById('social-overlay').classList.remove('active');
+  }
+  document.getElementById('social-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeSocial();
+  });
+  document.getElementById('admin-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeAdminPanel();
+  });
+
+  /* ── BGM ── */
+  const SONGS = [
+    {
+      name: 'Chubina',
+      artist: 'Aesthetic Chill Vibe',
+      src: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/HoliznaCC0/Lo-fi_And_Chill/HoliznaCC0_-_01_-_Lofi_Hip_Hop_Study_Beat_1.mp3'
+    },
+    {
+      name: 'Golden Brown',
+      artist: 'Lofi Smooth Vibe',
+      src: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/HoliznaCC0/Lo-fi_And_Chill/HoliznaCC0_-_02_-_Lofi_Hip_Hop_Study_Beat_2.mp3'
+    },
+    {
+      name: 'Blue',
+      artist: 'Dreamy Chill Beats',
+      src: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/HoliznaCC0/Lo-fi_And_Chill/HoliznaCC0_-_03_-_Lofi_Hip_Hop_Study_Beat_3.mp3'
+    }
+  ];
+
+  let currentSong = 0;
+  let bgmPlaying = false;
+  const bgmAudio = document.getElementById('bgm-audio');
+  bgmAudio.loop = true;
+  bgmAudio.volume = 0.5;
+  bgmAudio.src = SONGS[0].src;
+
+  function updateBarUI() {
+    const s = SONGS[currentSong];
+    document.getElementById('bgm-song-name').innerHTML =
+      `${s.name}<span>${s.artist} · ${bgmPlaying ? 'Now Playing' : 'Paused'}</span>`;
+    document.getElementById('bgm-play-btn').textContent = bgmPlaying ? '⏸' : '▶';
+    document.getElementById('bgm-eq').classList.toggle('paused', !bgmPlaying);
+  }
+
+  function updateSongItems(idx) {
+    for (let i = 0; i < 3; i++) {
+      document.getElementById('bgm-item-' + i).classList.toggle('playing', i === idx);
+      document.getElementById('bgm-icon-' + i).style.opacity = i === idx ? '1' : '0';
+    }
+  }
+
+  function selectSong(idx) {
+    closeBgm();
+    bgmAudio.pause();
+    bgmAudio.src = SONGS[idx].src;
+    bgmAudio.load();
+    currentSong = idx;
+    bgmAudio.play().then(() => {
+      bgmPlaying = true;
+      updateBarUI();
+      updateSongItems(idx);
+    }).catch(() => showToast('Tap ▶ to play'));
+  }
+
+  function toggleBgm() {
+    if (bgmPlaying) {
+      bgmAudio.pause();
+      bgmPlaying = false;
+      updateBarUI();
+    } else {
+      bgmAudio.play().then(() => {
+        bgmPlaying = true;
+        updateBarUI();
+      }).catch(() => showToast('Tap again to play'));
+    }
+  }
+
+  function setBgmVol(v) { bgmAudio.volume = parseFloat(v); }
+  function openBgm() { closeDropdown(); document.getElementById('bgm-overlay').classList.add('active'); }
+  function closeBgm() { document.getElementById('bgm-overlay').classList.remove('active'); }
+  document.getElementById('bgm-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeBgm();
+  });
+
+  // Autoplay on first interaction
+  let autoplayDone = false;
+  function tryAutoplay() {
+    if (autoplayDone) return;
+    autoplayDone = true;
+    bgmAudio.play().then(() => {
+      bgmPlaying = true;
+      updateBarUI();
+      updateSongItems(0);
+    }).catch(() => {});
+    document.removeEventListener('click', tryAutoplay);
+    document.removeEventListener('touchstart', tryAutoplay);
+  }
+  document.addEventListener('click', tryAutoplay);
+  document.addEventListener('touchstart', tryAutoplay);
+
+  /* ── COPY PROMPT ── */
+  let _currentPostContent = '';
+
+  function copyPrompt() {
+    if (!_currentPostContent) return;
+    navigator.clipboard.writeText(_currentPostContent).then(() => {
+      const btn = document.getElementById('copy-prompt-btn');
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; btn.classList.remove('copied'); }, 2200);
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = _currentPostContent;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      const btn = document.getElementById('copy-prompt-btn');
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; btn.classList.remove('copied'); }, 2200);
+    });
+  }
+</script>
+</body>
+</html>
